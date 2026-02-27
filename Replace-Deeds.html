@@ -1,0 +1,2556 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0d1117">
+<meta name="description" content="Replace Deeds - Premium Habit Tracker">
+<title>Replace Deeds</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ===== CSS VARIABLES & THEMES ===== */
+:root {
+  --bg: #0d1117;
+  --bg2: #161b22;
+  --bg3: #21262d;
+  --accent: #00d4b4;
+  --accent2: #00a896;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --border: rgba(255,255,255,0.08);
+  --danger: #f85149;
+  --warn: #d29922;
+  --success: #3fb950;
+  --card-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --font-head: 'Playfair Display', serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+[data-theme="ocean"] {
+  --bg: #0a1628;
+  --bg2: #0d1f3c;
+  --bg3: #122447;
+  --accent: #38bdf8;
+  --accent2: #0ea5e9;
+  --border: rgba(56,189,248,0.1);
+}
+
+[data-theme="forest"] {
+  --bg: #0a1a0a;
+  --bg2: #0f2311;
+  --bg3: #162e19;
+  --accent: #4ade80;
+  --accent2: #22c55e;
+  --border: rgba(74,222,128,0.1);
+}
+
+[data-theme="sunset"] {
+  --bg: #1a0a0a;
+  --bg2: #2a1010;
+  --bg3: #3a1515;
+  --accent: #fb923c;
+  --accent2: #f97316;
+  --border: rgba(251,146,60,0.1);
+}
+
+/* ===== RESET ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.4s, color 0.4s;
+}
+
+/* ===== SPLASH ===== */
+.splash {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+  transition: opacity 0.8s, transform 0.8s;
+}
+
+.splash.fade-out { opacity: 0; transform: scale(1.1); pointer-events: none; }
+
+.splash-logo { text-align: center; animation: splashIn 0.8s cubic-bezier(.34,1.56,.64,1); }
+
+@keyframes splashIn {
+  from { opacity: 0; transform: scale(0.5) translateY(40px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.logo-ring {
+  width: 120px; height: 120px; margin: 0 auto 24px;
+  filter: drop-shadow(0 0 30px rgba(0,212,180,0.5));
+  animation: logoSpin 3s ease infinite;
+}
+
+@keyframes logoSpin {
+  0%, 100% { filter: drop-shadow(0 0 20px rgba(0,212,180,0.4)); }
+  50% { filter: drop-shadow(0 0 50px rgba(0,212,180,0.8)); }
+}
+
+.logo-svg { width: 100%; height: 100%; }
+
+.logo-check {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: checkDraw 0.6s 0.4s ease forwards;
+}
+
+@keyframes checkDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+.splash-title {
+  font-family: var(--font-head);
+  font-size: 2.2rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--accent), #fff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+
+.splash-sub { color: var(--text2); font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase; }
+
+/* ===== SCREEN / HIDDEN ===== */
+.screen { min-height: 100vh; }
+.hidden { display: none !important; }
+
+/* ===== ONBOARDING ===== */
+.onboard-container {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+
+.onboard-step { display: none; text-align: center; max-width: 400px; width: 100%; }
+.onboard-step.active { display: block; animation: fadeUp 0.5s ease; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.onboard-icon { font-size: 4rem; margin-bottom: 16px; }
+
+.onboard-step h2 {
+  font-family: var(--font-head);
+  font-size: 1.8rem; margin-bottom: 12px;
+  color: var(--text);
+}
+
+.onboard-step p { color: var(--text2); margin-bottom: 24px; line-height: 1.6; }
+
+.field-group { margin-bottom: 16px; text-align: left; }
+.field-group label { display: block; font-size: 0.8rem; color: var(--text2); margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase; }
+
+input[type="text"], input[type="date"], input[type="password"], input[type="number"], textarea, select {
+  width: 100%; padding: 12px 16px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text);
+  font-family: var(--font-body); font-size: 0.95rem;
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0,212,180,0.1);
+}
+
+.commit-options { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 24px; }
+
+.commit-btn {
+  padding: 10px 20px; border-radius: 100px;
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text2); cursor: pointer; font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.commit-btn:hover, .commit-btn.active {
+  background: var(--accent); color: #000; border-color: var(--accent);
+  font-weight: 600; transform: scale(1.05);
+}
+
+/* ===== BUTTONS ===== */
+.btn-primary {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #000; font-weight: 700; font-size: 1rem;
+  border: none; border-radius: var(--radius-sm); cursor: pointer;
+  transition: all 0.2s; font-family: var(--font-body);
+  letter-spacing: 0.5px;
+}
+
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,212,180,0.3); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.btn-secondary {
+  padding: 10px 20px;
+  background: transparent; border: 1px solid var(--accent);
+  color: var(--accent); border-radius: var(--radius-sm);
+  cursor: pointer; font-family: var(--font-body);
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover { background: rgba(0,212,180,0.1); }
+
+.btn-danger {
+  padding: 10px 20px; margin-right: 8px; margin-top: 8px;
+  background: transparent; border: 1px solid var(--danger);
+  color: var(--danger); border-radius: var(--radius-sm);
+  cursor: pointer; font-family: var(--font-body);
+  transition: all 0.2s;
+}
+
+.btn-danger:hover { background: rgba(248,81,73,0.1); }
+
+.btn-icon {
+  width: 36px; height: 36px;
+  background: var(--accent); color: #000;
+  border: none; border-radius: 50%; cursor: pointer;
+  font-size: 1.4rem; font-weight: 700; line-height: 1;
+  transition: all 0.2s;
+}
+
+.btn-icon:hover { transform: scale(1.1); box-shadow: 0 4px 12px rgba(0,212,180,0.4); }
+
+/* ===== TOPBAR ===== */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+}
+
+.streak-badge {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--bg3); padding: 6px 12px;
+  border-radius: 100px; cursor: pointer;
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+
+.streak-badge:hover { border-color: var(--accent); }
+.streak-fire { font-size: 1.2rem; }
+.streak-num { font-family: var(--font-mono); font-weight: 600; color: var(--accent); font-size: 1rem; }
+
+.logo-small { cursor: pointer; }
+
+.water-badge {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--bg3); padding: 6px 10px;
+  border-radius: 100px; font-size: 0.85rem;
+  color: var(--accent); font-family: var(--font-mono);
+  border: 1px solid var(--border); cursor: pointer;
+}
+
+.avatar-btn {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; color: #000; font-size: 0.9rem; cursor: pointer;
+  margin-left: 8px;
+}
+
+/* ===== MOTIVATION BANNER ===== */
+.motivation-banner {
+  background: linear-gradient(90deg, rgba(0,212,180,0.1), rgba(0,168,150,0.05));
+  border-bottom: 1px solid rgba(0,212,180,0.15);
+  padding: 8px 16px; text-align: center;
+  font-size: 0.82rem; color: var(--accent);
+  font-style: italic; overflow: hidden;
+}
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+  padding: 0 0 80px;
+  min-height: calc(100vh - 120px);
+}
+
+.tab-panel { display: none; padding: 16px; }
+.tab-panel.active { display: block; animation: fadeUp 0.3s ease; }
+
+/* ===== SECTIONS ===== */
+.section-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.section-card:hover { border-color: rgba(0,212,180,0.2); }
+
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.section-title-row { display: flex; align-items: center; gap: 10px; }
+
+.section-emoji { font-size: 1.3rem; }
+
+.section-name {
+  font-family: var(--font-head);
+  font-size: 1.1rem; font-weight: 700;
+  color: var(--text);
+}
+
+.section-progress-bar {
+  height: 3px; background: var(--bg3);
+  border-radius: 100px; overflow: hidden;
+}
+
+.section-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 100px;
+  transition: width 0.5s cubic-bezier(.34,1.56,.64,1);
+}
+
+.section-actions { display: flex; gap: 6px; align-items: center; }
+
+.section-action-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--text2); font-size: 1rem; padding: 4px;
+  border-radius: 6px; transition: all 0.2s;
+}
+
+.section-action-btn:hover { color: var(--text); background: var(--bg3); }
+
+.section-collapse-icon { color: var(--text2); transition: transform 0.3s; }
+.section-card.collapsed .section-collapse-icon { transform: rotate(-90deg); }
+
+.habits-list { padding: 0 16px 16px; }
+.section-card.collapsed .habits-list { display: none; }
+
+.habit-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  transition: all 0.2s;
+}
+
+.habit-row:last-child { border-bottom: none; }
+
+.habit-check {
+  width: 28px; height: 28px; min-width: 28px;
+  border: 2px solid var(--border);
+  border-radius: 50%; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+  background: transparent;
+  color: transparent;
+  font-size: 0.9rem;
+}
+
+.habit-check.done {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+  transform: scale(1.1);
+}
+
+.habit-info { flex: 1; }
+.habit-name { font-size: 0.95rem; color: var(--text); }
+.habit-desc { font-size: 0.78rem; color: var(--text2); margin-top: 2px; }
+
+.habit-streak-mini {
+  font-family: var(--font-mono); font-size: 0.75rem;
+  color: var(--accent); background: rgba(0,212,180,0.1);
+  padding: 2px 8px; border-radius: 100px;
+}
+
+.habit-actions { display: flex; gap: 4px; }
+.habit-del-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--text2); opacity: 0.4; font-size: 0.85rem;
+  padding: 4px; border-radius: 6px; transition: all 0.2s;
+}
+
+.habit-del-btn:hover { opacity: 1; color: var(--danger); }
+
+.add-habit-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 0; cursor: pointer;
+  color: var(--text2); font-size: 0.85rem;
+  border: none; background: none; width: 100%;
+  transition: color 0.2s;
+}
+
+.add-habit-btn:hover { color: var(--accent); }
+.add-habit-btn .plus { font-size: 1.2rem; }
+
+/* ===== FAB ===== */
+.fab-add {
+  position: fixed; bottom: 90px; right: 20px;
+  width: 56px; height: 56px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #000; font-size: 1.8rem; font-weight: 300;
+  border: none; border-radius: 50%; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0,212,180,0.4);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  z-index: 50;
+}
+
+.fab-add:hover { transform: scale(1.1) rotate(90deg); box-shadow: 0 8px 30px rgba(0,212,180,0.5); }
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: flex; background: var(--bg2);
+  border-top: 1px solid var(--border);
+  z-index: 100; padding: 0;
+  backdrop-filter: blur(20px);
+}
+
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 10px 0; 8px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text2); transition: all 0.2s;
+  position: relative;
+}
+
+.nav-btn.active { color: var(--accent); }
+
+.nav-btn.active::before {
+  content: '';
+  position: absolute; top: 0; left: 20%; right: 20%;
+  height: 2px; background: var(--accent);
+  border-radius: 0 0 4px 4px;
+}
+
+.nav-icon { font-size: 1.3rem; }
+.nav-label { font-size: 0.65rem; margin-top: 2px; letter-spacing: 0.5px; }
+
+/* ===== TASKS ===== */
+.tasks-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.tasks-header h2 { font-family: var(--font-head); font-size: 1.5rem; }
+
+.task-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px;
+  margin-bottom: 10px; transition: all 0.2s;
+}
+
+.task-item.done { opacity: 0.5; }
+.task-item.done .task-name { text-decoration: line-through; }
+
+.task-check {
+  width: 22px; height: 22px; min-width: 22px;
+  border: 2px solid var(--border); border-radius: 6px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; background: transparent; color: transparent;
+  font-size: 0.8rem;
+}
+
+.task-check.done { background: var(--success); border-color: var(--success); color: #fff; }
+
+.task-info { flex: 1; }
+.task-name { font-size: 0.95rem; color: var(--text); }
+.task-note { font-size: 0.78rem; color: var(--text2); margin-top: 3px; white-space: pre-wrap; }
+
+.task-del { background: none; border: none; cursor: pointer; color: var(--text2); opacity: 0.4; font-size: 0.9rem; padding: 2px; transition: all 0.2s; }
+.task-del:hover { opacity: 1; color: var(--danger); }
+
+.tasks-empty { text-align: center; color: var(--text2); padding: 60px 0; font-size: 0.9rem; line-height: 1.8; }
+
+/* ===== ANALYTICS ===== */
+.analytics-header { margin-bottom: 16px; }
+.analytics-header h2 { font-family: var(--font-head); font-size: 1.5rem; }
+
+.analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.analytics-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 16px;
+}
+
+.analytics-card.full { grid-column: 1/-1; }
+
+.analytics-label { font-size: 0.75rem; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.analytics-value { font-family: var(--font-mono); font-size: 1.8rem; font-weight: 600; color: var(--accent); }
+.analytics-sub { font-size: 0.75rem; color: var(--text2); margin-top: 4px; }
+
+.streak-chart { height: 60px; display: flex; align-items: flex-end; gap: 3px; margin-top: 8px; }
+.streak-bar { flex: 1; background: var(--bg3); border-radius: 4px 4px 0 0; min-height: 4px; transition: height 0.3s; }
+.streak-bar.has { background: var(--accent); }
+
+/* ===== RESULT / TREE ===== */
+.result-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.result-header h2 { font-family: var(--font-head); font-size: 1.5rem; }
+
+.result-stats { display: flex; gap: 10px; }
+.result-stats span {
+  background: var(--bg3); padding: 4px 12px;
+  border-radius: 100px; font-size: 0.82rem;
+  border: 1px solid var(--border);
+}
+
+.tree-container {
+  display: flex; justify-content: center; margin-bottom: 20px;
+  position: relative;
+}
+
+#treeCanvas {
+  border-radius: var(--radius);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+}
+
+.water-info { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+
+.water-stat {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+
+.water-label { font-size: 0.75rem; color: var(--text2); }
+.water-val { font-family: var(--font-mono); color: var(--accent); font-size: 1rem; font-weight: 600; }
+
+/* ===== GRASS GRID (GitHub-style) ===== */
+.grass-grid {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 16px;
+}
+
+.grass-title { font-size: 0.8rem; color: var(--text2); margin-bottom: 10px; }
+
+.grass-cells {
+  display: flex; flex-wrap: wrap; gap: 3px;
+}
+
+.grass-cell {
+  width: 12px; height: 12px;
+  border-radius: 3px;
+  background: var(--bg3);
+  transition: background 0.3s;
+}
+
+.grass-cell.g1 { background: rgba(0,212,180,0.2); }
+.grass-cell.g2 { background: rgba(0,212,180,0.4); }
+.grass-cell.g3 { background: rgba(0,212,180,0.7); }
+.grass-cell.g4 { background: var(--accent); }
+
+/* ===== SETTINGS ===== */
+.settings-container { max-width: 500px; margin: 0 auto; }
+.settings-container h2 { font-family: var(--font-head); font-size: 1.5rem; margin-bottom: 20px; }
+.settings-section { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 16px; }
+.settings-section h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text2); margin-bottom: 12px; }
+
+.profile-card { display: flex; flex-direction: column; gap: 8px; }
+.profile-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.profile-row:last-child { border-bottom: none; }
+.profile-row-label { font-size: 0.8rem; color: var(--text2); }
+.profile-row-val { font-size: 0.9rem; color: var(--text); font-weight: 500; }
+
+.theme-options { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.theme-btn {
+  padding: 8px 16px; border-radius: 100px;
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text2); cursor: pointer; font-size: 0.85rem;
+  transition: all 0.2s; font-family: var(--font-body);
+}
+
+.theme-btn.active, .theme-btn:hover {
+  border-color: var(--accent); color: var(--accent);
+  background: rgba(0,212,180,0.1);
+}
+
+.freeze-status { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+#freezeText { font-size: 0.9rem; color: var(--text2); }
+.danger-zone { border-color: rgba(248,81,73,0.2); }
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(10px);
+  z-index: 1000; display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+
+.modal {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px;
+  width: 100%; max-width: 420px; max-height: 85vh; overflow-y: auto;
+  animation: modalIn 0.3s cubic-bezier(.34,1.56,.64,1);
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.85) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-title { font-family: var(--font-head); font-size: 1.3rem; margin-bottom: 16px; color: var(--text); }
+
+/* ===== STREAK DIALOG ===== */
+.streak-dialog {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+  z-index: 2000; display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+
+.streak-dialog-inner {
+  background: var(--bg2); border: 1px solid var(--warn);
+  border-radius: var(--radius); padding: 32px 24px;
+  text-align: center; max-width: 340px; width: 100%;
+  animation: modalIn 0.3s cubic-bezier(.34,1.56,.64,1);
+}
+
+.streak-dialog-icon { font-size: 3rem; margin-bottom: 12px; }
+.streak-dialog-inner h3 { font-family: var(--font-head); margin-bottom: 10px; color: var(--warn); }
+.streak-dialog-inner p { color: var(--text2); margin-bottom: 20px; line-height: 1.5; }
+.streak-dialog-btns { display: flex; gap: 10px; justify-content: center; }
+
+/* ===== COMPLETION ANIMATION ===== */
+.completion-anim {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.9);
+  z-index: 3000; display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+}
+
+.completion-inner { text-align: center; position: relative; }
+
+.completion-text {
+  font-family: var(--font-head);
+  font-size: 2.5rem; font-weight: 900;
+  background: linear-gradient(135deg, var(--accent), #fff);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: pulse 1s ease infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.completion-msg {
+  color: var(--text2); margin-top: 10px; font-size: 1.1rem;
+  animation: fadeUp 0.5s 0.3s ease both;
+}
+
+.water-drops {
+  margin-top: 20px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+}
+
+.drop {
+  font-size: 1.5rem;
+  animation: dropFall 0.5s ease both;
+}
+
+@keyframes dropFall {
+  from { opacity: 0; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== BIRTHDAY ===== */
+.birthday-modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
+  z-index: 4000; display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+
+.birthday-inner {
+  background: var(--bg2);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius); padding: 40px 24px;
+  text-align: center; max-width: 360px;
+  animation: modalIn 0.5s cubic-bezier(.34,1.56,.64,1);
+}
+
+.birthday-emoji { font-size: 4rem; margin-bottom: 16px; animation: spin 3s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.birthday-inner h2 { font-family: var(--font-head); font-size: 2rem; color: var(--accent); margin-bottom: 8px; }
+.birthday-inner p { color: var(--text2); margin-bottom: 24px; }
+
+/* ===== FREEZE ANIMATION ===== */
+@keyframes freeze {
+  0%, 100% { filter: hue-rotate(0deg); }
+  50% { filter: hue-rotate(180deg) brightness(0.7); }
+}
+
+.tree-frozen { animation: freeze 2s ease infinite; }
+
+/* ===== NOTE STYLES ===== */
+.note-editor { min-height: 100px; resize: vertical; }
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* ===== RESPONSIVE ===== */
+@media (min-width: 600px) {
+  .main-content { max-width: 600px; margin: 0 auto; }
+  .bottom-nav { max-width: 600px; left: 50%; transform: translateX(-50%); }
+  .topbar { max-width: 600px; margin: 0 auto; }
+  .fab-add { right: calc(50% - 300px + 20px); }
+}
+
+/* ===== MEDAL DISPLAY ===== */
+.medal-display {
+  text-align: center; padding: 20px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); margin-bottom: 16px;
+}
+
+.medal-icon { font-size: 3rem; margin-bottom: 8px; }
+.medal-name { font-family: var(--font-head); font-size: 1.3rem; color: var(--accent); }
+.medal-days { font-size: 0.8rem; color: var(--text2); margin-top: 4px; }
+
+/* ===== TREE STAGES LABEL ===== */
+.tree-weather {
+  position: absolute; top: 10px; right: 10px;
+  font-size: 1.5rem;
+  animation: float 3s ease infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* ===== EMPTY SECTIONS STATE ===== */
+.sections-empty {
+  text-align: center; padding: 60px 20px;
+  color: var(--text2);
+}
+
+.sections-empty .empty-icon { font-size: 3rem; margin-bottom: 16px; }
+.sections-empty p { font-size: 0.9rem; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<!-- SPLASH SCREEN -->
+<div id="splash" class="splash">
+  <div class="splash-logo">
+    <div class="logo-ring">
+      <svg viewBox="0 0 100 100" class="logo-svg">
+        <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(0,212,180,0.3)" stroke-width="3"/>
+        <path d="M50 15 A35 35 0 1 1 15 50" fill="none" stroke="#00d4b4" stroke-width="3" stroke-linecap="round"/>
+        <polygon points="48,8 56,18 40,18" fill="#00d4b4"/>
+        <polyline points="30,52 44,66 72,38" fill="none" stroke="#00d4b4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" class="logo-check"/>
+      </svg>
+    </div>
+    <h1 class="splash-title">Replace Deeds</h1>
+    <p class="splash-sub">Build. Sustain. Transform.</p>
+  </div>
+</div>
+
+<!-- ONBOARDING -->
+<div id="onboarding" class="screen hidden">
+  <div class="onboard-container">
+    <div class="onboard-step active" data-step="0">
+      <div class="onboard-icon">🌱</div>
+      <h2>Welcome to Replace Deeds</h2>
+      <p>A premium habit tracker that grows with you. Plant your tree of consistency.</p>
+      <button class="btn-primary" onclick="nextOnboard()">Let's Begin</button>
+    </div>
+    <div class="onboard-step" data-step="1">
+      <div class="onboard-icon">👤</div>
+      <h2>Create Your Profile</h2>
+      <div class="field-group">
+        <label>Full Name *</label>
+        <input type="text" id="pName" placeholder="Your name">
+      </div>
+      <div class="field-group">
+        <label>Father's Name</label>
+        <input type="text" id="pFather" placeholder="Father's name">
+      </div>
+      <div class="field-group">
+        <label>Date of Birth *</label>
+        <input type="date" id="pDOB">
+      </div>
+      <div class="field-group">
+        <label>Username *</label>
+        <input type="text" id="pUsername" placeholder="@username">
+      </div>
+      <div class="field-group">
+        <label>PIN (4 digits) *</label>
+        <input type="password" id="pPin" maxlength="4" placeholder="••••" inputmode="numeric">
+      </div>
+      <button class="btn-primary" onclick="saveProfile()">Create Profile</button>
+    </div>
+    <div class="onboard-step" data-step="2">
+      <div class="onboard-icon">🎯</div>
+      <h2>Make a Commitment</h2>
+      <p>How long are you committing to Replace Deeds?</p>
+      <div class="commit-options">
+        <button class="commit-btn" data-days="7">7 Days</button>
+        <button class="commit-btn" data-days="20">20 Days</button>
+        <button class="commit-btn" data-days="50">50 Days</button>
+        <button class="commit-btn" data-days="100">100 Days</button>
+        <button class="commit-btn" data-days="365">365 Days 🏆</button>
+      </div>
+      <button class="btn-primary" onclick="finishOnboard()" id="commitNext" disabled>Start Journey</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" class="screen hidden">
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="streak-badge" id="streakBadge" onclick="showStreakInfo()">
+        <span class="streak-fire">🔥</span>
+        <span class="streak-num" id="streakNum">0</span>
+      </div>
+    </div>
+    <div class="topbar-center">
+      <svg viewBox="0 0 40 40" width="28" height="28" style="cursor:pointer" onclick="showTab('result')">
+        <circle cx="20" cy="20" r="16" fill="none" stroke="rgba(0,212,180,0.4)" stroke-width="2"/>
+        <path d="M20 6 A14 14 0 1 1 6 20" fill="none" stroke="#00d4b4" stroke-width="2" stroke-linecap="round"/>
+        <polygon points="19,2 23,8 15,8" fill="#00d4b4"/>
+        <polyline points="12,21 17,27 29,15" fill="none" stroke="#00d4b4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="topbar-right">
+      <div class="water-badge" onclick="showTab('result')">
+        <span>💧</span><span id="totalWater">0</span>
+      </div>
+      <div class="avatar-btn" onclick="showTab('settings')">
+        <span id="avatarInitial">U</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="motivation-banner">
+    <span id="motivText">Every great journey begins with a single step 🌟</span>
+  </div>
+
+  <main class="main-content">
+    <div class="tab-panel active" id="tab-habits">
+      <div class="sections-container" id="sectionsContainer"></div>
+      <button class="fab-add" onclick="showAddSection()" title="Add Section">+</button>
+    </div>
+    <div class="tab-panel" id="tab-tasks">
+      <div class="tasks-header">
+        <h2>Tasks</h2>
+        <button class="btn-icon" onclick="showAddTask()">+</button>
+      </div>
+      <div class="tasks-list" id="tasksList"></div>
+      <div class="tasks-empty" id="tasksEmpty"><p>No tasks yet.<br>Tap + to add your first task!</p></div>
+    </div>
+    <div class="tab-panel" id="tab-analytics">
+      <div class="analytics-header"><h2>Analytics</h2></div>
+      <div class="analytics-grid" id="analyticsGrid"></div>
+    </div>
+    <div class="tab-panel" id="tab-result">
+      <div class="result-header">
+        <h2>Your Tree</h2>
+        <div class="result-stats">
+          <span id="resultDays">Day 0</span>
+          <span id="resultMedal">🪵 Wood</span>
+        </div>
+      </div>
+      <div class="tree-container">
+        <canvas id="treeCanvas" width="320" height="320"></canvas>
+      </div>
+      <div class="water-info">
+        <div class="water-stat">
+          <span class="water-label">💧 Total Water</span>
+          <span class="water-val" id="totalWaterResult">0 gallons</span>
+        </div>
+        <div class="water-stat">
+          <span class="water-label">🌿 Tree Stage</span>
+          <span class="water-val" id="treeStage">Seed</span>
+        </div>
+      </div>
+      <div class="grass-grid" id="grassGrid"></div>
+    </div>
+    <div class="tab-panel" id="tab-settings">
+      <div class="settings-container">
+        <h2>Settings</h2>
+        <div class="settings-section">
+          <h3>Profile</h3>
+          <div class="profile-card" id="profileCard"></div>
+        </div>
+        <div class="settings-section">
+          <h3>Theme</h3>
+          <div class="theme-options">
+            <button class="theme-btn active" data-theme="dark"   onclick="setTheme('dark')">🌙 Dark</button>
+            <button class="theme-btn"        data-theme="ocean"  onclick="setTheme('ocean')">🌊 Ocean</button>
+            <button class="theme-btn"        data-theme="forest" onclick="setTheme('forest')">🌿 Forest</button>
+            <button class="theme-btn"        data-theme="sunset" onclick="setTheme('sunset')">🌅 Sunset</button>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h3>Streak Freeze</h3>
+          <div class="freeze-status">
+            <span id="freezeText">No freeze active</span>
+            <button class="btn-secondary" onclick="useStreakFreeze()" id="freezeBtn">Use Freeze ❄️</button>
+          </div>
+        </div>
+        <div class="settings-section danger-zone">
+          <h3>Data</h3>
+          <button class="btn-danger" onclick="exportData()">📤 Export Data</button>
+          <button class="btn-danger" onclick="confirmReset()">🗑️ Reset App</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="showTab('habits')"    data-tab="habits">
+      <span class="nav-icon">🏠</span><span class="nav-label">Habits</span>
+    </button>
+    <button class="nav-btn" onclick="showTab('tasks')"     data-tab="tasks">
+      <span class="nav-icon">✅</span><span class="nav-label">Tasks</span>
+    </button>
+    <button class="nav-btn" onclick="showTab('analytics')"  data-tab="analytics">
+      <span class="nav-icon">📊</span><span class="nav-label">Analytics</span>
+    </button>
+    <button class="nav-btn" onclick="showTab('result')"    data-tab="result">
+      <span class="nav-icon">🌳</span><span class="nav-label">Result</span>
+    </button>
+    <button class="nav-btn" onclick="showTab('settings')"  data-tab="settings">
+      <span class="nav-icon">⚙️</span><span class="nav-label">Settings</span>
+    </button>
+  </nav>
+</div>
+
+<!-- MODAL -->
+<div id="modalOverlay" class="modal-overlay hidden" onclick="overlayClick(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-content" id="modalContent"></div>
+  </div>
+</div>
+
+<!-- STREAK DIALOG -->
+<div id="streakDialog" class="streak-dialog hidden">
+  <div class="streak-dialog-inner">
+    <div class="streak-dialog-icon" id="streakDialogIcon">⚠️</div>
+    <h3 id="streakDialogTitle">Streak Warning!</h3>
+    <p id="streakDialogMsg"></p>
+    <div class="streak-dialog-btns" id="streakDialogBtns"></div>
+  </div>
+</div>
+
+<!-- COMPLETION ANIMATION -->
+<div id="completionAnim" class="completion-anim hidden">
+  <div class="completion-inner">
+    <div class="completion-text">Alhamdulillah! 🌟</div>
+    <div class="completion-msg" id="completionMsg"></div>
+    <div class="water-drops" id="waterDrops"></div>
+  </div>
+</div>
+
+<!-- BIRTHDAY MODAL -->
+<div id="birthdayModal" class="birthday-modal hidden">
+  <div class="birthday-inner">
+    <div class="birthday-emoji">🎂</div>
+    <h2>Happy Birthday!</h2>
+    <p id="birthdayMsg"></p>
+    <button class="btn-primary" onclick="document.getElementById('birthdayModal').classList.add('hidden')">Thank You! 🎉</button>
+  </div>
+</div>
+
+<script>
+// ===== DB.JS - Encrypted Local Storage =====
+const DB = {
+  _key: 'rd_v1_',
+  
+  // Simple XOR encryption
+  _enc(str) {
+    const k = 'RD2024SEC';
+    let out = '';
+    for (let i = 0; i < str.length; i++) {
+      out += String.fromCharCode(str.charCodeAt(i) ^ k.charCodeAt(i % k.length));
+    }
+    return btoa(unescape(encodeURIComponent(out)));
+  },
+
+  _dec(str) {
+    try {
+      const raw = decodeURIComponent(escape(atob(str)));
+      const k = 'RD2024SEC';
+      let out = '';
+      for (let i = 0; i < raw.length; i++) {
+        out += String.fromCharCode(raw.charCodeAt(i) ^ k.charCodeAt(i % k.length));
+      }
+      return out;
+    } catch { return null; }
+  },
+
+  set(key, val) {
+    try {
+      const str = JSON.stringify(val);
+      localStorage.setItem(this._key + key, this._enc(str));
+    } catch (e) {
+      console.error('DB.set error', e);
+    }
+  },
+
+  get(key, fallback = null) {
+    try {
+      const raw = localStorage.getItem(this._key + key);
+      if (!raw) return fallback;
+      const dec = this._dec(raw);
+      if (!dec) return fallback;
+      return JSON.parse(dec);
+    } catch {
+      return fallback;
+    }
+  },
+
+  del(key) {
+    localStorage.removeItem(this._key + key);
+  },
+
+  clear() {
+    const keys = Object.keys(localStorage).filter(k => k.startsWith(this._key));
+    keys.forEach(k => localStorage.removeItem(k));
+  },
+
+  export() {
+    const data = {};
+    const keys = Object.keys(localStorage).filter(k => k.startsWith(this._key));
+    keys.forEach(k => {
+      data[k.replace(this._key, '')] = this.get(k.replace(this._key, ''));
+    });
+    return JSON.stringify(data, null, 2);
+  }
+};
+
+// ===== DATA MODELS =====
+const Store = {
+  // Profile
+  getProfile: () => DB.get('profile', null),
+  setProfile: (p) => DB.set('profile', p),
+
+  // Sections  
+  getSections: () => DB.get('sections', []),
+  setSections: (s) => DB.set('sections', s),
+
+  // Habits
+  getHabits: () => DB.get('habits', []),
+  setHabits: (h) => DB.set('habits', h),
+
+  // Tasks
+  getTasks: () => DB.get('tasks', []),
+  setTasks: (t) => DB.set('tasks', t),
+
+  // Streak data
+  getStreak: () => DB.get('streak', {
+    current: 0,
+    longest: 0,
+    lastDate: null,
+    freezeAvailable: true,
+    freezeUsed: false,
+    history: [], // array of date strings
+    warningShown: false
+  }),
+  setStreak: (s) => DB.set('streak', s),
+
+  // Habit completions {date: {habitId: bool}}
+  getCompletions: () => DB.get('completions', {}),
+  setCompletions: (c) => DB.set('completions', c),
+
+  // Task completions {taskId: bool}
+  getTaskCompletions: () => DB.get('taskCompletions', {}),
+  setTaskCompletions: (t) => DB.set('taskCompletions', t),
+
+  // Tree / water
+  getTree: () => DB.get('tree', {
+    totalWater: 0,
+    dailyWater: [],
+    startDate: null,
+    daysGrown: 0
+  }),
+  setTree: (t) => DB.set('tree', t),
+
+  // Settings
+  getSettings: () => DB.get('settings', {
+    theme: 'dark',
+    commitment: null,
+    commitDays: 0,
+    startDate: null,
+    onboardDone: false
+  }),
+  setSettings: (s) => DB.set('settings', s),
+
+  // Notes
+  getNotes: () => DB.get('notes', []),
+  setNotes: (n) => DB.set('notes', n),
+
+  // Grass (streak history for display)
+  getGrass: () => DB.get('grass', []),
+  setGrass: (g) => DB.set('grass', g),
+};
+
+// Generate unique ID
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 6);
+}
+
+// Today's date string
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
+// Is same day
+function isSameDay(d1, d2) {
+  return d1.split('T')[0] === d2.split('T')[0];
+}
+
+// Check birthday
+function isBirthday(dob) {
+  const now = new Date();
+  const dobDate = new Date(dob);
+  return now.getMonth() === dobDate.getMonth() && now.getDate() === dobDate.getDate();
+}
+
+// Midnight check
+function getMidnightCheck() {
+  const now = new Date();
+  return `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+}
+// ===== STREAK.JS =====
+
+const StreakManager = {
+  motivations: [
+    "You are unbelievable! 🚀",
+    "Are you a robot? You're too consistent! 🤖",
+    "Mashallah! Keep going! ✨",
+    "SubhanAllah, you're incredible! 🌟",
+    "You're on fire! Nothing can stop you! 🔥",
+    "Champions are made of days like today! 🏆",
+    "Look at you go! Absolutely unstoppable! 💪",
+    "Your future self is thanking you right now! 🙏",
+    "This is what dedication looks like! 👑",
+    "Wow. Just wow. You're doing amazing! 😤",
+    "The grind never lies. Respect! 💎",
+    "Every legend has a streak like yours! ⭐",
+  ],
+
+  freezeMessages: [
+    "Your tree is bending... but still standing! Hold on! 🌪️",
+    "Even storms pass. Your roots are strong! 🌳",
+    "Frozen today, but not forgotten! ❄️🌱",
+    "The tree rests, but it remembers your dedication! 💙",
+  ],
+
+  warningMessages: [
+    "⚠️ One day left! Complete your habits or use a Freeze!",
+    "Your streak is in danger! Don't let it end now!",
+    "Tomorrow is the last chance before your streak breaks!",
+  ],
+
+  getRandomMotivation() {
+    return this.motivations[Math.floor(Math.random() * this.motivations.length)];
+  },
+
+  getRandomFreezeMsg() {
+    return this.freezeMessages[Math.floor(Math.random() * this.freezeMessages.length)];
+  },
+
+  // Called at midnight or app open - checks streak status
+  checkStreakOnOpen() {
+    const streak = Store.getStreak();
+    const todayStr = today();
+    const lastDate = streak.lastDate;
+
+    if (!lastDate) return { status: 'fresh' };
+
+    const last = new Date(lastDate);
+    const now = new Date(todayStr);
+    const diffDays = Math.round((now - last) / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) {
+      return { status: 'today', streak: streak.current };
+    } else if (diffDays === 1) {
+      return { status: 'yesterday', streak: streak.current };
+    } else if (diffDays === 2) {
+      // Check freeze
+      if (streak.freezeAvailable && !streak.freezeUsed) {
+        return { status: 'freeze_available', streak: streak.current, diffDays };
+      } else {
+        return { status: 'broken_with_warning', streak: streak.current };
+      }
+    } else {
+      // Streak broken
+      return { status: 'broken', streak: streak.current };
+    }
+  },
+
+  // Record today's completion
+  recordCompletion(water = 1) {
+    const streak = Store.getStreak();
+    const todayStr = today();
+    const lastDate = streak.lastDate;
+
+    let newStreak = streak.current;
+
+    if (!lastDate) {
+      newStreak = 1;
+    } else {
+      const last = new Date(lastDate);
+      const now = new Date(todayStr);
+      const diffDays = Math.round((now - last) / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 0) {
+        // Already counted today
+      } else if (diffDays === 1) {
+        newStreak = streak.current + 1;
+      } else {
+        // Gap - reset
+        newStreak = 1;
+      }
+    }
+
+    // Update grass
+    const grass = Store.getGrass();
+    const existingIdx = grass.findIndex(g => g.date === todayStr);
+    if (existingIdx === -1) {
+      grass.push({ date: todayStr, water });
+    } else {
+      grass[existingIdx].water += water;
+    }
+    Store.setGrass(grass.slice(-365));
+
+    const newStreakData = {
+      ...streak,
+      current: newStreak,
+      longest: Math.max(streak.longest, newStreak),
+      lastDate: todayStr,
+      freezeUsed: false,
+      warningShown: false,
+      history: [...(streak.history || []).slice(-30), todayStr]
+    };
+
+    Store.setStreak(newStreakData);
+    return newStreak;
+  },
+
+  breakStreak() {
+    const streak = Store.getStreak();
+    const oldStreak = streak.current;
+    Store.setStreak({
+      ...streak,
+      current: 0,
+      lastDate: null,
+      freezeUsed: false,
+      warningShown: false
+    });
+    return oldStreak;
+  },
+
+  useFreeze() {
+    const streak = Store.getStreak();
+    if (!streak.freezeAvailable) return false;
+
+    // Extend lastDate by 1 to cover today
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    Store.setStreak({
+      ...streak,
+      freezeAvailable: false,
+      freezeUsed: true,
+      lastDate: yesterdayStr
+    });
+    return true;
+  },
+
+  restoreFreeze() {
+    const streak = Store.getStreak();
+    // Restore freeze after 3 good days
+    if (!streak.freezeAvailable && streak.current >= 3) {
+      Store.setStreak({ ...streak, freezeAvailable: true });
+      return true;
+    }
+    return false;
+  },
+
+  getStreakStatus() {
+    const streak = Store.getStreak();
+    return {
+      current: streak.current,
+      longest: streak.longest,
+      frozen: streak.freezeUsed,
+      freezeAvailable: streak.freezeAvailable,
+      history: streak.history || []
+    };
+  },
+
+  getMedal(days) {
+    if (days >= 250) return { icon: '👑', name: 'Diamond', color: '#a78bfa' };
+    if (days >= 200) return { icon: '🥇', name: 'Gold', color: '#fbbf24' };
+    if (days >= 150) return { icon: '🥈', name: 'Silver', color: '#9ca3af' };
+    if (days >= 100) return { icon: '🥉', name: 'Bronze', color: '#cd7c3b' };
+    if (days >= 50) return { icon: '🏅', name: 'Iron', color: '#6b7280' };
+    return { icon: '🪵', name: 'Wood', color: '#92400e' };
+  },
+
+  // Water earned per session (based on habits completed)
+  calcWater(habitsCompleted, totalHabits) {
+    if (totalHabits === 0) return 0;
+    const pct = habitsCompleted / totalHabits;
+    return Math.floor(pct * 10); // up to 10 gallons per session
+  }
+};
+// ===== TREE.JS - Canvas Tree Renderer =====
+
+const TreeRenderer = {
+  canvas: null,
+  ctx: null,
+  animFrame: null,
+  particles: [],
+
+  init(canvasId) {
+    this.canvas = document.getElementById(canvasId);
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext('2d');
+    this.draw();
+  },
+
+  getTreeStage(totalWater, days) {
+    // Stages based on days primarily, water accelerates
+    const waterBonus = Math.floor(totalWater / 50);
+    const effectiveDays = days + waterBonus;
+
+    if (effectiveDays === 0) return 'seed';
+    if (effectiveDays < 5) return 'sprout';
+    if (effectiveDays < 15) return 'sapling';
+    if (effectiveDays < 30) return 'young';
+    if (effectiveDays < 50) return 'growing';
+    if (effectiveDays < 75) return 'mature';
+    if (effectiveDays < 100) return 'leafy';
+    if (effectiveDays < 150) return 'fruit';
+    if (effectiveDays < 200) return 'lush';
+    return 'ancient';
+  },
+
+  getStageName(stage) {
+    const names = {
+      seed: '🌰 Seed', sprout: '🌱 Sprout', sapling: '🪴 Sapling',
+      young: '🌿 Young Tree', growing: '🌲 Growing',
+      mature: '🌳 Mature', leafy: '🍃 Full Leaves',
+      fruit: '🍎 Bearing Fruit', lush: '🌴 Lush Tree', ancient: '🏛️ Ancient Tree'
+    };
+    return names[stage] || 'Seed';
+  },
+
+  draw(options = {}) {
+    const tree = Store.getTree();
+    const streak = Store.getStreak();
+    const settings = Store.getSettings();
+
+    const totalWater = tree.totalWater || 0;
+    const days = streak.current || 0;
+    const stage = this.getTreeStage(totalWater, days);
+    const frozen = streak.freezeUsed;
+
+    if (!this.canvas) return stage;
+    const ctx = this.ctx;
+    const w = this.canvas.width;
+    const h = this.canvas.height;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Background gradient
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+    const isDark = ['dark', 'ocean'].includes(settings.theme || 'dark');
+    bgGrad.addColorStop(0, frozen ? '#0a1528' : isDark ? '#0d1117' : '#1a2a1a');
+    bgGrad.addColorStop(1, frozen ? '#0d1e35' : isDark ? '#161b22' : '#0d1710');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, w, h);
+
+    // Ground
+    const groundGrad = ctx.createLinearGradient(0, h - 40, 0, h);
+    groundGrad.addColorStop(0, frozen ? '#1a2a4a' : '#1a3a0a');
+    groundGrad.addColorStop(1, frozen ? '#0d1e35' : '#0d2005');
+    ctx.fillStyle = groundGrad;
+    ctx.beginPath();
+    ctx.ellipse(w / 2, h - 20, 100, 25, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    const cx = w / 2;
+    const groundY = h - 30;
+
+    // Draw based on stage
+    if (stage === 'seed') {
+      this.drawSeed(ctx, cx, groundY, frozen);
+    } else if (stage === 'sprout') {
+      this.drawSprout(ctx, cx, groundY, frozen);
+    } else {
+      this.drawTree(ctx, cx, groundY, stage, frozen, days);
+    }
+
+    // Weather effects
+    if (days > 0 && days % 3 === 0 && !frozen) {
+      this.drawSpring(ctx, w, h);
+    }
+
+    // Stars / snow if frozen
+    if (frozen) {
+      this.drawFrost(ctx, w, h);
+    }
+
+    // 365 day burst effect placeholder
+    if (days >= 365) {
+      this.drawGlow(ctx, cx, groundY - 100, '#ffd700');
+    }
+
+    return stage;
+  },
+
+  drawSeed(ctx, cx, groundY, frozen) {
+    ctx.fillStyle = frozen ? '#4a6a9a' : '#8B4513';
+    ctx.beginPath();
+    ctx.ellipse(cx, groundY - 8, 10, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // crack
+    ctx.strokeStyle = frozen ? '#6a8aba' : '#6B3010';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cx, groundY - 16);
+    ctx.lineTo(cx - 4, groundY);
+    ctx.stroke();
+  },
+
+  drawSprout(ctx, cx, groundY, frozen) {
+    // Stem
+    ctx.strokeStyle = frozen ? '#4a7a4a' : '#2d5a1b';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(cx, groundY);
+    ctx.bezierCurveTo(cx - 5, groundY - 20, cx + 5, groundY - 35, cx, groundY - 50);
+    ctx.stroke();
+    // Leaf
+    if (!frozen) {
+      ctx.fillStyle = '#4ade80';
+    } else {
+      ctx.fillStyle = '#6ab0e0';
+    }
+    ctx.beginPath();
+    ctx.ellipse(cx + 14, groundY - 35, 14, 8, -0.5, 0, Math.PI * 2);
+    ctx.fill();
+  },
+
+  drawTree(ctx, cx, groundY, stage, frozen, days) {
+    const stageIdx = ['sapling', 'young', 'growing', 'mature', 'leafy', 'fruit', 'lush', 'ancient'].indexOf(stage);
+    const trunkH = 30 + stageIdx * 15;
+    const trunkW = 4 + stageIdx * 2;
+    const crownR = 20 + stageIdx * 10;
+
+    // Tilt if frozen
+    const tiltAngle = frozen ? 0.1 : 0;
+
+    ctx.save();
+    ctx.translate(cx, groundY);
+    ctx.rotate(tiltAngle);
+
+    // Trunk
+    const trunkGrad = ctx.createLinearGradient(-trunkW, 0, trunkW, 0);
+    trunkGrad.addColorStop(0, frozen ? '#3a5a7a' : '#4a2c0a');
+    trunkGrad.addColorStop(0.5, frozen ? '#4a7a9a' : '#6B3A1F');
+    trunkGrad.addColorStop(1, frozen ? '#2a4a6a' : '#3a1c05');
+    ctx.fillStyle = trunkGrad;
+    ctx.beginPath();
+    ctx.moveTo(-trunkW, 0);
+    ctx.bezierCurveTo(-trunkW - 2, -trunkH / 2, -trunkW, -trunkH, 0, -trunkH);
+    ctx.bezierCurveTo(trunkW, -trunkH, trunkW + 2, -trunkH / 2, trunkW, 0);
+    ctx.fill();
+
+    // Crown layers
+    const numLayers = Math.min(3 + stageIdx, 6);
+    for (let i = numLayers; i >= 0; i--) {
+      const layerY = -trunkH - (i * crownR * 0.5);
+      const layerR = crownR * (0.5 + (i / numLayers) * 0.8);
+      const alpha = 0.7 + (i / numLayers) * 0.3;
+
+      let leafColor;
+      if (frozen) {
+        leafColor = `rgba(100, 180, 220, ${alpha})`;
+      } else if (stage === 'lush' || stage === 'ancient') {
+        leafColor = `rgba(34, 197, 94, ${alpha})`;
+      } else {
+        leafColor = `rgba(74, 222, 128, ${alpha})`;
+      }
+
+      const grad = ctx.createRadialGradient(0, layerY - layerR * 0.2, 0, 0, layerY, layerR);
+      grad.addColorStop(0, leafColor);
+      grad.addColorStop(1, frozen ? 'rgba(70,140,200,0)' : 'rgba(34,139,34,0)');
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(0, layerY, layerR, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Fruits (75+ days)
+    if (['fruit', 'lush', 'ancient'].includes(stage)) {
+      const fruitCount = Math.min(days - 60, 15);
+      for (let i = 0; i < fruitCount; i++) {
+        const angle = (i / fruitCount) * Math.PI * 2;
+        const r = crownR * 0.5;
+        const fx = Math.cos(angle) * r;
+        const fy = -trunkH - crownR * 0.3 + Math.sin(angle) * r;
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.arc(fx, fy, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Cup / Medal at 365 days
+    if (days >= 365) {
+      ctx.fillStyle = '#ffd700';
+      ctx.font = '24px serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🏆', 0, -trunkH - crownR - 30);
+    }
+
+    ctx.restore();
+  },
+
+  drawSpring(ctx, w, h) {
+    // Random flower particles
+    const flowers = ['🌸', '🌺', '🌻'];
+    for (let i = 0; i < 3; i++) {
+      ctx.font = '12px serif';
+      ctx.fillText(flowers[i % flowers.length], 20 + i * 80, 30 + Math.random() * 20);
+    }
+  },
+
+  drawFrost(ctx, w, h) {
+    ctx.fillStyle = 'rgba(150, 200, 255, 0.05)';
+    ctx.fillRect(0, 0, w, h);
+    // Snowflakes
+    for (let i = 0; i < 10; i++) {
+      const x = Math.random() * w;
+      const y = Math.random() * h;
+      ctx.font = '14px serif';
+      ctx.fillText('❄️', x, y);
+    }
+  },
+
+  drawGlow(ctx, cx, cy, color) {
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 60);
+    grad.addColorStop(0, color + '80');
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  },
+
+  // Animate water being poured
+  animateWater(water, onDone) {
+    const drops = [];
+    const total = Math.min(water, 20);
+    for (let i = 0; i < total; i++) {
+      drops.push({ delay: i * 50, done: false });
+    }
+
+    const container = document.getElementById('waterDrops');
+    if (!container) { if (onDone) onDone(); return; }
+    container.innerHTML = '';
+
+    let count = 0;
+    drops.forEach((drop, i) => {
+      setTimeout(() => {
+        const el = document.createElement('span');
+        el.className = 'drop';
+        el.textContent = '💧';
+        el.style.animationDelay = '0s';
+        container.appendChild(el);
+        count++;
+        if (count === drops.length) {
+          setTimeout(() => { if (onDone) onDone(); }, 1000);
+        }
+      }, drop.delay);
+    });
+
+    if (total === 0 && onDone) setTimeout(onDone, 500);
+  }
+};
+// ===== APP.JS - Main Application =====
+
+// State
+let currentTab = 'habits';
+let onboardStep = 0;
+let selectedCommit = null;
+let midnightCheck = null;
+
+// ===== INIT =====
+window.addEventListener('DOMContentLoaded', () => {
+  const settings = Store.getSettings();
+
+  if (!settings.onboardDone) {
+    document.getElementById('splash').addEventListener('animationend', () => {});
+    setTimeout(() => {
+      const splash = document.getElementById('splash');
+      splash.classList.add('fade-out');
+      setTimeout(() => {
+        splash.style.display = 'none';
+        document.getElementById('onboarding').classList.remove('hidden');
+      }, 800);
+    }, 2000);
+  } else {
+    setTimeout(() => {
+      const splash = document.getElementById('splash');
+      splash.classList.add('fade-out');
+      setTimeout(() => {
+        splash.style.display = 'none';
+        initApp();
+      }, 800);
+    }, 1800);
+  }
+
+  // Theme
+  applyTheme(settings.theme || 'dark');
+
+  // Midnight check
+  setInterval(midnightReset, 60 * 1000);
+});
+
+function initApp() {
+  document.getElementById('app').classList.remove('hidden');
+
+  // Check birthday
+  checkBirthday();
+
+  // Check streak
+  checkStreakStatus();
+
+  // Render everything
+  renderSections();
+  renderTasks();
+  renderAnalytics();
+  renderResult();
+  renderSettings();
+  updateTopBar();
+  cycleMotivation();
+
+  // Start motivation cycle
+  setInterval(cycleMotivation, 12000);
+}
+
+// ===== ONBOARDING =====
+function nextOnboard() {
+  onboardStep++;
+  document.querySelectorAll('.onboard-step').forEach(el => {
+    el.classList.remove('active');
+    if (parseInt(el.dataset.step) === onboardStep) el.classList.add('active');
+  });
+}
+
+function saveProfile() {
+  const name = document.getElementById('pName').value.trim();
+  const father = document.getElementById('pFather').value.trim();
+  const dob = document.getElementById('pDOB').value;
+  const username = document.getElementById('pUsername').value.trim();
+  const pin = document.getElementById('pPin').value;
+
+  if (!name || !dob || !username || !pin || pin.length !== 4) {
+    alert('Please fill all required fields (Name, DOB, Username, PIN)');
+    return;
+  }
+
+  Store.setProfile({ name, father, dob, username, pin, createdAt: new Date().toISOString() });
+  nextOnboard();
+}
+
+function finishOnboard() {
+  if (!selectedCommit) return;
+
+  const settings = Store.getSettings();
+  settings.onboardDone = true;
+  settings.commitment = selectedCommit;
+  settings.startDate = new Date().toISOString();
+  Store.setSettings(settings);
+
+  const tree = Store.getTree();
+  tree.startDate = new Date().toISOString();
+  Store.setTree(tree);
+
+  document.getElementById('onboarding').classList.add('hidden');
+  initApp();
+}
+
+// Commit selection
+document.querySelectorAll('.commit-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.commit-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    selectedCommit = parseInt(this.dataset.days);
+    document.getElementById('commitNext').disabled = false;
+  });
+});
+
+// ===== STREAK CHECK =====
+function checkStreakStatus() {
+  const status = StreakManager.checkStreakOnOpen();
+
+  if (status.status === 'broken') {
+    // Multiple days missed - reset
+    StreakManager.breakStreak();
+    showStreakDialog('⚠️ Streak Broken!',
+      `Your ${status.streak}-day streak has ended. Starting fresh from Day 1!\n\nRemember: Every expert was once a beginner.`,
+      false);
+  } else if (status.status === 'broken_with_warning') {
+    showStreakDialog('❄️ Streak Warning!',
+      `You missed yesterday. Your ${status.streak}-day streak might break!\nComplete habits today or use your Freeze to save it.`,
+      true);
+  } else if (status.status === 'freeze_available' && status.diffDays >= 2) {
+    showStreakDialog('🆘 Last Chance!',
+      `You have a Streak Freeze available!\nUse it now to save your ${status.streak}-day streak!`,
+      true, () => autoUseFreeze());
+  }
+}
+
+function showStreakDialog(title, msg, showFreeze = false, onFreeze = null) {
+  const dialog = document.getElementById('streakDialog');
+  document.getElementById('streakDialogTitle').textContent = title;
+  document.getElementById('streakDialogMsg').textContent = msg;
+
+  const btns = document.querySelector('.streak-dialog-btns');
+  btns.innerHTML = '';
+
+  if (showFreeze) {
+    const streak = Store.getStreak();
+    if (streak.freezeAvailable && !streak.freezeUsed) {
+      const freezeBtn = document.createElement('button');
+      freezeBtn.className = 'btn-secondary';
+      freezeBtn.textContent = '❄️ Use Freeze';
+      freezeBtn.onclick = () => {
+        StreakManager.useFreeze();
+        closeStreakDialog();
+        showNotif('Streak Frozen! 🧊 Come back strong tomorrow!');
+        updateTopBar();
+        renderResult();
+        if (onFreeze) onFreeze();
+      };
+      btns.appendChild(freezeBtn);
+    }
+  }
+
+  const okBtn = document.createElement('button');
+  okBtn.className = 'btn-primary';
+  okBtn.textContent = 'Got it!';
+  okBtn.style.flex = '1';
+  okBtn.onclick = closeStreakDialog;
+  btns.appendChild(okBtn);
+
+  dialog.classList.remove('hidden');
+}
+
+function closeStreakDialog() {
+  document.getElementById('streakDialog').classList.add('hidden');
+}
+
+function autoUseFreeze() {
+  StreakManager.useFreeze();
+  updateTopBar();
+}
+
+// ===== SECTIONS =====
+function renderSections() {
+  const container = document.getElementById('sectionsContainer');
+  const sections = Store.getSections();
+  const habits = Store.getHabits();
+  const completions = Store.getCompletions();
+  const todayStr = today();
+
+  if (sections.length === 0) {
+    container.innerHTML = `
+      <div class="sections-empty">
+        <div class="empty-icon">🌱</div>
+        <p>No sections yet.<br>Tap <strong>+</strong> to add your first section!</p>
+      </div>`;
+    return;
+  }
+
+  const todayComp = completions[todayStr] || {};
+
+  container.innerHTML = sections.map(section => {
+    const sectionHabits = habits.filter(h => h.sectionId === section.id);
+    const doneCount = sectionHabits.filter(h => todayComp[h.id]).length;
+    const pct = sectionHabits.length > 0 ? (doneCount / sectionHabits.length) * 100 : 0;
+    const allDone = sectionHabits.length > 0 && doneCount === sectionHabits.length;
+
+    return `
+      <div class="section-card ${section.collapsed ? 'collapsed' : ''}" id="sec-${section.id}">
+        <div class="section-header" onclick="toggleSection('${section.id}')">
+          <div class="section-title-row">
+            <span class="section-emoji">${section.emoji || '📌'}</span>
+            <div>
+              <div class="section-name">${escHtml(section.name)}</div>
+              <div class="section-progress-bar">
+                <div class="section-progress-fill" style="width:${pct}%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="section-actions">
+            <span style="font-size:0.75rem;color:var(--text2)">${doneCount}/${sectionHabits.length}</span>
+            <button class="section-action-btn" onclick="event.stopPropagation();showAddHabit('${section.id}')" title="Add Habit">+</button>
+            <button class="section-action-btn" onclick="event.stopPropagation();confirmDeleteSection('${section.id}')" title="Delete Section">🗑️</button>
+            <span class="section-collapse-icon">▾</span>
+          </div>
+        </div>
+        <div class="habits-list">
+          ${sectionHabits.map(h => renderHabitRow(h, todayComp[h.id], section.id)).join('')}
+          ${allDone && sectionHabits.length > 0 ? `<div style="text-align:center;padding:10px;color:var(--accent);font-style:italic;font-size:0.85rem;">Alhamdulillah! ✨ ${StreakManager.getRandomMotivation()}</div>` : ''}
+          <button class="add-habit-btn" onclick="showAddHabit('${section.id}')">
+            <span class="plus">+</span> <span>Add Habit</span>
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Check all habits done
+  const allHabits = habits;
+  const doneAll = allHabits.length > 0 && allHabits.every(h => todayComp[h.id]);
+  if (doneAll) {
+    triggerAllComplete(allHabits.length);
+  }
+}
+
+function renderHabitRow(h, isDone, sectionId) {
+  return `
+    <div class="habit-row" id="hr-${h.id}">
+      <div class="habit-check ${isDone ? 'done' : ''}" onclick="toggleHabit('${h.id}', '${sectionId}')">
+        ${isDone ? '✓' : ''}
+      </div>
+      <div class="habit-info">
+        <div class="habit-name">${escHtml(h.name)}</div>
+        ${h.desc ? `<div class="habit-desc">${escHtml(h.desc)}</div>` : ''}
+      </div>
+      <span class="habit-streak-mini">🔥${h.streak || 0}</span>
+      <div class="habit-actions">
+        <button class="habit-del-btn" onclick="confirmDeleteHabit('${h.id}')">✕</button>
+      </div>
+    </div>`;
+}
+
+function toggleSection(id) {
+  const sections = Store.getSections();
+  const idx = sections.findIndex(s => s.id === id);
+  if (idx !== -1) sections[idx].collapsed = !sections[idx].collapsed;
+  Store.setSections(sections);
+  renderSections();
+}
+
+function toggleHabit(habitId, sectionId) {
+  const completions = Store.getCompletions();
+  const todayStr = today();
+  if (!completions[todayStr]) completions[todayStr] = {};
+
+  const wasDone = completions[todayStr][habitId];
+  completions[todayStr][habitId] = !wasDone;
+  Store.setCompletions(completions);
+
+  // Update habit streak
+  const habits = Store.getHabits();
+  const idx = habits.findIndex(h => h.id === habitId);
+  if (idx !== -1) {
+    if (!wasDone) {
+      habits[idx].streak = (habits[idx].streak || 0) + 1;
+      habits[idx].lastDone = todayStr;
+    } else {
+      habits[idx].streak = Math.max(0, (habits[idx].streak || 1) - 1);
+    }
+    Store.setHabits(habits);
+  }
+
+  // Calculate water and update streak
+  const allHabits = Store.getHabits().filter(h => {
+    const section = Store.getSections().find(s => s.id === h.sectionId);
+    return section != null;
+  });
+  const doneCount = allHabits.filter(h => completions[todayStr][h.id]).length;
+  const water = StreakManager.calcWater(doneCount, allHabits.length);
+
+  // Update tree water
+  if (!wasDone) {
+    const tree = Store.getTree();
+    tree.totalWater = (tree.totalWater || 0) + 1;
+    Store.setTree(tree);
+    document.getElementById('totalWater').textContent = tree.totalWater;
+  }
+
+  // Update streak if all done today
+  const allDone = allHabits.every(h => completions[todayStr][h.id]);
+  if (allDone && !wasDone) {
+    const newStreak = StreakManager.recordCompletion(water);
+    updateTopBar();
+    showNotif(`🔥 Day ${newStreak}! ${StreakManager.getRandomMotivation()}`);
+    StreakManager.restoreFreeze();
+  }
+
+  renderSections();
+  renderAnalytics();
+  renderResult();
+}
+
+// ===== ADD SECTION =====
+function showAddSection() {
+  const sections = Store.getSections();
+  const presets = [
+    { name: 'Muslim', emoji: '🕌' },
+    { name: 'Student', emoji: '📚' },
+    { name: 'Health', emoji: '💪' },
+    { name: 'Work', emoji: '💼' },
+    { name: 'Personal', emoji: '🌟' },
+    { name: 'Family', emoji: '👨‍👩‍👧' },
+  ];
+
+  showModal(`
+    <div class="modal-title">Add Section</div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:0.8rem;color:var(--text2);display:block;margin-bottom:6px">Quick Presets</label>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+        ${presets.map(p => `<button class="commit-btn" onclick="quickSection('${p.name}','${p.emoji}')">${p.emoji} ${p.name}</button>`).join('')}
+      </div>
+    </div>
+    <div class="field-group">
+      <label>Section Name</label>
+      <input type="text" id="secName" placeholder="e.g. Morning Routine">
+    </div>
+    <div class="field-group">
+      <label>Emoji</label>
+      <input type="text" id="secEmoji" placeholder="🏠" maxlength="2" value="📌">
+    </div>
+    <button class="btn-primary" onclick="addSection()">Add Section</button>
+  `);
+}
+
+function quickSection(name, emoji) {
+  document.getElementById('secName').value = name;
+  document.getElementById('secEmoji').value = emoji;
+}
+
+function addSection() {
+  const name = document.getElementById('secName').value.trim();
+  const emoji = document.getElementById('secEmoji').value.trim() || '📌';
+  if (!name) return;
+
+  const sections = Store.getSections();
+  sections.push({ id: genId(), name, emoji, collapsed: false, createdAt: today() });
+  Store.setSections(sections);
+  closeModal();
+  renderSections();
+}
+
+function confirmDeleteSection(id) {
+  const sections = Store.getSections();
+  const sec = sections.find(s => s.id === id);
+  showModal(`
+    <div class="modal-title">Delete Section?</div>
+    <p style="color:var(--text2);margin-bottom:20px">Delete "${escHtml(sec?.name || '')}" and all its habits? This cannot be undone.</p>
+    <div style="display:flex;gap:10px">
+      <button class="btn-danger" style="flex:1" onclick="deleteSection('${id}')">Delete</button>
+      <button class="btn-secondary" style="flex:1" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+
+function deleteSection(id) {
+  let sections = Store.getSections();
+  sections = sections.filter(s => s.id !== id);
+  let habits = Store.getHabits();
+  habits = habits.filter(h => h.sectionId !== id);
+  Store.setSections(sections);
+  Store.setHabits(habits);
+  closeModal();
+  renderSections();
+}
+
+// ===== ADD HABIT =====
+function showAddHabit(sectionId) {
+  showModal(`
+    <div class="modal-title">Add Habit</div>
+    <input type="hidden" id="habitSecId" value="${sectionId}">
+    <div class="field-group">
+      <label>Habit Name</label>
+      <input type="text" id="habitName" placeholder="e.g. Read Quran 15 min">
+    </div>
+    <div class="field-group">
+      <label>Description (optional)</label>
+      <input type="text" id="habitDesc" placeholder="Details...">
+    </div>
+    <button class="btn-primary" onclick="addHabit()">Add Habit</button>
+  `);
+}
+
+function addHabit() {
+  const name = document.getElementById('habitName').value.trim();
+  const desc = document.getElementById('habitDesc').value.trim();
+  const sectionId = document.getElementById('habitSecId').value;
+  if (!name) return;
+
+  const habits = Store.getHabits();
+  habits.push({ id: genId(), name, desc, sectionId, streak: 0, createdAt: today() });
+  Store.setHabits(habits);
+  closeModal();
+  renderSections();
+}
+
+function confirmDeleteHabit(id) {
+  const habits = Store.getHabits();
+  const h = habits.find(h => h.id === id);
+  showModal(`
+    <div class="modal-title">Delete Habit?</div>
+    <p style="color:var(--text2);margin-bottom:20px">Delete "${escHtml(h?.name || '')}"?</p>
+    <div style="display:flex;gap:10px">
+      <button class="btn-danger" style="flex:1" onclick="deleteHabit('${id}')">Delete</button>
+      <button class="btn-secondary" style="flex:1" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+
+function deleteHabit(id) {
+  let habits = Store.getHabits();
+  habits = habits.filter(h => h.id !== id);
+  Store.setHabits(habits);
+
+  // Remove from completions
+  const completions = Store.getCompletions();
+  Object.keys(completions).forEach(date => {
+    delete completions[date][id];
+  });
+  Store.setCompletions(completions);
+  closeModal();
+  renderSections();
+}
+
+// ===== TASKS =====
+function renderTasks() {
+  const tasks = Store.getTasks();
+  const completions = Store.getTaskCompletions();
+  const list = document.getElementById('tasksList');
+  const empty = document.getElementById('tasksEmpty');
+
+  if (tasks.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  list.innerHTML = tasks.map(t => `
+    <div class="task-item ${completions[t.id] ? 'done' : ''}" id="ti-${t.id}">
+      <div class="task-check ${completions[t.id] ? 'done' : ''}" onclick="toggleTask('${t.id}')">
+        ${completions[t.id] ? '✓' : ''}
+      </div>
+      <div class="task-info">
+        <div class="task-name">${escHtml(t.name)}</div>
+        ${t.note ? `<div class="task-note">${escHtml(t.note)}</div>` : ''}
+        <div style="font-size:0.72rem;color:var(--text2);margin-top:4px">${t.date || ''}</div>
+      </div>
+      <button class="task-del" onclick="deleteTask('${t.id}')">✕</button>
+    </div>
+  `).join('');
+
+  // Check if all tasks done → show Alhamdulillah
+  const allDone = tasks.length > 0 && tasks.every(t => completions[t.id]);
+  if (allDone) {
+    list.innerHTML += `<div style="text-align:center;padding:20px;font-size:1.2rem;color:var(--accent);font-family:var(--font-head)">
+      Alhamdulillah! 🌟<br><span style="font-size:0.9rem;font-family:var(--font-body)">${StreakManager.getRandomMotivation()}</span>
+    </div>`;
+  }
+}
+
+function showAddTask() {
+  showModal(`
+    <div class="modal-title">Add Task</div>
+    <div class="field-group">
+      <label>Task Name</label>
+      <input type="text" id="taskName" placeholder="What needs to be done?">
+    </div>
+    <div class="field-group">
+      <label>Notes (Google Keep style)</label>
+      <textarea id="taskNote" class="note-editor" placeholder="Add notes, steps, anything..."></textarea>
+    </div>
+    <div class="field-group">
+      <label>Due Date</label>
+      <input type="date" id="taskDate">
+    </div>
+    <button class="btn-primary" onclick="addTask()">Add Task</button>
+  `);
+}
+
+function addTask() {
+  const name = document.getElementById('taskName').value.trim();
+  const note = document.getElementById('taskNote').value.trim();
+  const date = document.getElementById('taskDate').value;
+  if (!name) return;
+
+  const tasks = Store.getTasks();
+  tasks.push({ id: genId(), name, note, date, createdAt: new Date().toISOString() });
+  Store.setTasks(tasks);
+  closeModal();
+  renderTasks();
+}
+
+function toggleTask(id) {
+  const completions = Store.getTaskCompletions();
+  completions[id] = !completions[id];
+  Store.setTaskCompletions(completions);
+  renderTasks();
+}
+
+function deleteTask(id) {
+  let tasks = Store.getTasks();
+  tasks = tasks.filter(t => t.id !== id);
+  const completions = Store.getTaskCompletions();
+  delete completions[id];
+  Store.setTasks(tasks);
+  Store.setTaskCompletions(completions);
+  renderTasks();
+}
+
+// ===== ANALYTICS =====
+function renderAnalytics() {
+  const streak = StreakManager.getStreakStatus();
+  const habits = Store.getHabits();
+  const completions = Store.getCompletions();
+  const todayStr = today();
+  const todayComp = completions[todayStr] || {};
+  const doneTodayCount = habits.filter(h => todayComp[h.id]).length;
+  const tree = Store.getTree();
+
+  const grid = document.getElementById('analyticsGrid');
+  if (!grid) return;
+
+  // Weekly data
+  const weekData = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const ds = d.toISOString().split('T')[0];
+    const comp = completions[ds] || {};
+    const done = habits.filter(h => comp[h.id]).length;
+    weekData.push({ label: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()], done, total: habits.length });
+  }
+
+  grid.innerHTML = `
+    <div class="analytics-card">
+      <div class="analytics-label">🔥 Current Streak</div>
+      <div class="analytics-value">${streak.current}</div>
+      <div class="analytics-sub">days</div>
+    </div>
+    <div class="analytics-card">
+      <div class="analytics-label">🏆 Longest Streak</div>
+      <div class="analytics-value">${streak.longest}</div>
+      <div class="analytics-sub">days record</div>
+    </div>
+    <div class="analytics-card">
+      <div class="analytics-label">✅ Today Done</div>
+      <div class="analytics-value">${doneTodayCount}/${habits.length}</div>
+      <div class="analytics-sub">habits</div>
+    </div>
+    <div class="analytics-card">
+      <div class="analytics-label">💧 Total Water</div>
+      <div class="analytics-value">${tree.totalWater || 0}</div>
+      <div class="analytics-sub">gallons</div>
+    </div>
+    <div class="analytics-card full">
+      <div class="analytics-label">📅 This Week</div>
+      <div class="streak-chart">
+        ${weekData.map(d => {
+          const h = d.total > 0 ? Math.max(8, (d.done / d.total) * 50) : 8;
+          const cls = d.done > 0 ? (d.done === d.total ? 'has' : 'has') : '';
+          return `<div class="streak-bar ${cls}" style="height:${h}px" title="${d.label}: ${d.done}/${d.total}">
+            <div style="text-align:center;font-size:0.6rem;margin-top:4px;color:var(--text2)">${d.label}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="analytics-card full">
+      <div class="analytics-label">📊 Habit Completion Rate</div>
+      <div style="margin-top:8px">
+        ${habits.slice(0, 5).map(h => {
+          const total = Object.keys(completions).length;
+          const done = Object.values(completions).filter(c => c[h.id]).length;
+          const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+          return `<div style="margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:3px">
+              <span>${escHtml(h.name)}</span>
+              <span style="color:var(--accent)">${pct}%</span>
+            </div>
+            <div style="height:4px;background:var(--bg3);border-radius:4px">
+              <div style="height:100%;width:${pct}%;background:var(--accent);border-radius:4px;transition:width 0.5s"></div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ===== RESULT / TREE =====
+function renderResult() {
+  const tree = Store.getTree();
+  const streak = Store.getStreak();
+  const days = streak.current || 0;
+
+  document.getElementById('resultDays').textContent = `Day ${days}`;
+  document.getElementById('totalWaterResult').textContent = `${tree.totalWater || 0} gallons`;
+
+  const medal = StreakManager.getMedal(days);
+  document.getElementById('resultMedal').textContent = `${medal.icon} ${medal.name}`;
+
+  const stage = TreeRenderer.draw();
+  document.getElementById('treeStage').textContent = TreeRenderer.getStageName(stage);
+
+  // Grass grid
+  renderGrass();
+}
+
+function renderGrass() {
+  const grass = Store.getGrass();
+  const container = document.getElementById('grassGrid');
+  if (!container) return;
+
+  const days = 91; // 13 weeks
+  const cells = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const ds = d.toISOString().split('T')[0];
+    const entry = grass.find(g => g.date === ds);
+    const w = entry ? entry.water : 0;
+    let cls = '';
+    if (w > 0 && w < 3) cls = 'g1';
+    else if (w < 6) cls = 'g2';
+    else if (w < 9) cls = 'g3';
+    else if (w >= 9) cls = 'g4';
+    cells.push(`<div class="grass-cell ${cls}" title="${ds}: ${w} gallons"></div>`);
+  }
+
+  container.innerHTML = `
+    <div class="grass-title">🌿 Streak History (Last 13 Weeks)</div>
+    <div class="grass-cells">${cells.join('')}</div>
+  `;
+}
+
+// ===== SETTINGS =====
+function renderSettings() {
+  const profile = Store.getProfile();
+  const settings = Store.getSettings();
+  const streak = Store.getStreak();
+
+  if (profile) {
+    document.getElementById('profileCard').innerHTML = `
+      <div class="profile-row"><span class="profile-row-label">Name</span><span class="profile-row-val">${escHtml(profile.name)}</span></div>
+      <div class="profile-row"><span class="profile-row-label">Username</span><span class="profile-row-val">@${escHtml(profile.username)}</span></div>
+      <div class="profile-row"><span class="profile-row-label">Father</span><span class="profile-row-val">${escHtml(profile.father || '-')}</span></div>
+      <div class="profile-row"><span class="profile-row-label">Date of Birth</span><span class="profile-row-val">${profile.dob || '-'}</span></div>
+      <div class="profile-row"><span class="profile-row-label">Commitment</span><span class="profile-row-val">${settings.commitment || '-'} days</span></div>
+    `;
+    document.getElementById('avatarInitial').textContent = profile.name.charAt(0).toUpperCase();
+  }
+
+  // Freeze status
+  const freezeText = document.getElementById('freezeText');
+  const freezeBtn = document.getElementById('freezeBtn');
+  if (streak.freezeAvailable && !streak.freezeUsed) {
+    freezeText.textContent = '❄️ Streak Freeze Available!';
+    freezeBtn.disabled = false;
+  } else if (streak.freezeUsed) {
+    freezeText.textContent = '🧊 Freeze is active today';
+    freezeBtn.disabled = true;
+  } else {
+    freezeText.textContent = '✅ Earn by maintaining 3-day streaks';
+    freezeBtn.disabled = true;
+  }
+
+  // Theme buttons
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === (settings.theme || 'dark'));
+  });
+}
+
+function useStreakFreeze() {
+  if (StreakManager.useFreeze()) {
+    showNotif('Streak Frozen! 🧊 Come back tomorrow!');
+    renderSettings();
+    renderResult();
+    updateTopBar();
+  }
+}
+
+// ===== TOP BAR =====
+function updateTopBar() {
+  const streak = Store.getStreak();
+  const tree = Store.getTree();
+  document.getElementById('streakNum').textContent = streak.current || 0;
+  document.getElementById('totalWater').textContent = tree.totalWater || 0;
+
+  const profile = Store.getProfile();
+  if (profile) {
+    document.getElementById('avatarInitial').textContent = profile.name.charAt(0).toUpperCase();
+  }
+}
+
+// ===== TABS =====
+function showTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+
+  if (tab === 'result') renderResult();
+  if (tab === 'analytics') renderAnalytics();
+  if (tab === 'settings') renderSettings();
+}
+
+// ===== MOTIVATION ===== 
+const motivations = [
+  "Every great journey begins with a single step 🌟",
+  "Consistency is the key to mastery 🔑",
+  "Your habits define your destiny 🎯",
+  "Small steps, big results 🚀",
+  "Be better than yesterday 💪",
+  "Excellence is a habit, not an act ✨",
+  "Your tree grows with every deed 🌱",
+  "Alhamdulillah for another day to improve 🙏",
+  "Winners do daily what others do occasionally 🏆",
+  "Build yourself, one habit at a time 🧱",
+];
+
+let motIdx = 0;
+function cycleMotivation() {
+  const el = document.getElementById('motivText');
+  if (!el) return;
+  el.style.opacity = '0';
+  setTimeout(() => {
+    el.textContent = motivations[motIdx % motivations.length];
+    el.style.opacity = '1';
+    el.style.transition = 'opacity 0.5s';
+    motIdx++;
+  }, 400);
+}
+
+// ===== COMPLETION ANIMATION =====
+let completionShown = false;
+function triggerAllComplete(waterEarned) {
+  if (completionShown) return;
+  completionShown = true;
+
+  const el = document.getElementById('completionAnim');
+  document.getElementById('completionText').textContent = 'Alhamdulillah!';
+  document.getElementById('completionMsg').textContent = StreakManager.getRandomMotivation();
+  el.classList.remove('hidden');
+
+  TreeRenderer.animateWater(waterEarned, () => {
+    setTimeout(() => {
+      el.classList.add('hidden');
+      completionShown = false;
+      renderResult();
+    }, 2000);
+  });
+}
+
+// ===== BIRTHDAY CHECK =====
+function checkBirthday() {
+  const profile = Store.getProfile();
+  if (!profile || !profile.dob) return;
+
+  const lastBdayCheck = DB.get('lastBdayCheck');
+  const todayStr = today();
+  if (lastBdayCheck === todayStr) return;
+
+  if (isBirthday(profile.dob)) {
+    DB.set('lastBdayCheck', todayStr);
+    showBirthday(profile.name);
+  }
+}
+
+function showBirthday(name) {
+  document.getElementById('birthdayMsg').textContent =
+    `Happy Birthday ${name}! 🎂 May Allah bless you with health, happiness, and consistency in all your good deeds! Keep replacing bad deeds with good ones! 🌟`;
+  document.getElementById('birthdayModal').classList.remove('hidden');
+}
+
+function closeBirthday() {
+  document.getElementById('birthdayModal').classList.add('hidden');
+}
+
+// ===== THEME =====
+function setTheme(theme) {
+  applyTheme(theme);
+  const settings = Store.getSettings();
+  settings.theme = theme;
+  Store.setSettings(settings);
+  document.querySelectorAll('.theme-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.theme === theme);
+  });
+  renderResult(); // Redraw tree with new theme
+}
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+}
+
+// ===== MODAL =====
+function showModal(content) {
+  document.getElementById('modalContent').innerHTML = content;
+  document.getElementById('modalOverlay').classList.remove('hidden');
+}
+
+function closeModal(event) {
+  if (event && event.target !== document.getElementById('modalOverlay')) return;
+  document.getElementById('modalOverlay').classList.add('hidden');
+}
+
+window.closeModal = () => document.getElementById('modalOverlay').classList.add('hidden');
+
+// ===== NOTIFICATIONS =====
+function showNotif(msg) {
+  const el = document.createElement('div');
+  el.style.cssText = `
+    position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+    background:var(--bg2);border:1px solid var(--accent);
+    padding:12px 20px;border-radius:100px;font-size:0.85rem;
+    color:var(--text);z-index:5000;animation:fadeUp 0.3s ease;
+    white-space:nowrap;max-width:90vw;text-align:center;
+    box-shadow:0 4px 20px rgba(0,212,180,0.2);
+  `;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transition = 'opacity 0.5s';
+    setTimeout(() => el.remove(), 500);
+  }, 3000);
+}
+
+// ===== DATA MANAGEMENT =====
+function exportData() {
+  const data = DB.export();
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `replace-deeds-backup-${today()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function confirmReset() {
+  showModal(`
+    <div class="modal-title" style="color:var(--danger)">⚠️ Reset App?</div>
+    <p style="color:var(--text2);margin-bottom:20px">This will permanently delete ALL your data including streak, habits, and tree progress. This cannot be undone!</p>
+    <div style="display:flex;gap:10px">
+      <button class="btn-danger" style="flex:1" onclick="resetApp()">Yes, Reset Everything</button>
+      <button class="btn-secondary" style="flex:1" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+
+function resetApp() {
+  DB.clear();
+  location.reload();
+}
+
+// ===== STREAK INFO =====
+function showStreakInfo() {
+  const streak = StreakManager.getStreakStatus();
+  const medal = StreakManager.getMedal(streak.current);
+  showModal(`
+    <div class="modal-title">🔥 Streak Info</div>
+    <div class="medal-display">
+      <div class="medal-icon">${medal.icon}</div>
+      <div class="medal-name">${medal.name} Medal</div>
+      <div class="medal-days">${streak.current} day streak</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+      <div style="background:var(--bg3);padding:12px;border-radius:10px;text-align:center">
+        <div style="font-size:0.75rem;color:var(--text2)">Current</div>
+        <div style="font-family:var(--font-mono);font-size:1.5rem;color:var(--accent)">${streak.current}</div>
+      </div>
+      <div style="background:var(--bg3);padding:12px;border-radius:10px;text-align:center">
+        <div style="font-size:0.75rem;color:var(--text2)">Longest</div>
+        <div style="font-family:var(--font-mono);font-size:1.5rem;color:var(--accent)">${streak.longest}</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;font-size:0.8rem;color:var(--text2)">
+      ❄️ Freeze: ${streak.freezeAvailable && !streak.frozen ? 'Available' : streak.frozen ? 'Active' : 'Not available'}
+    </div>
+  `);
+}
+
+function showProfile() {
+  showTab('settings');
+}
+
+// ===== MIDNIGHT RESET =====
+function midnightReset() {
+  const checkKey = getMidnightCheck();
+  if (midnightCheck === checkKey) return;
+
+  const prevCheck = midnightCheck;
+  midnightCheck = checkKey;
+
+  if (prevCheck !== null) {
+    // Day changed - refresh
+    completionShown = false;
+    renderSections();
+    updateTopBar();
+    checkBirthday();
+  }
+}
+
+// ===== HELPERS =====
+function escHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// SW Register
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
+// Commit buttons
+document.querySelectorAll('.commit-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.commit-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    selectedCommit = parseInt(this.dataset.days);
+    document.getElementById('commitNext').disabled = false;
+  });
+});
+</script>
+</body>
+</html>
